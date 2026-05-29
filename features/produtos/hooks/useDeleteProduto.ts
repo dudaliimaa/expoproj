@@ -4,23 +4,25 @@ import { router } from "expo-router";
 import { Alert } from "react-native";
 
 export function useDeleteProduto() {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (id: string) => {
-      // Usa a mesma lógica do update, mas com DELETE
-      const response = await api.delete(`/produtos/${id}`);
-      return response.data;
-    },
-    onSuccess: () => {
-      // Isso aqui é o que faz o produto sumir da tela na hora!
-      queryClient.invalidateQueries({ queryKey: ["produtos"] });
-
-      Alert.alert("Sucesso", "Produto excluído!");
-      router.replace("/(tabs)"); // Volta para a listagem
-    },
-    onError: () => {
-      Alert.alert("Erro", "Não foi possível excluir o produto.");
-    }
-  });
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const response = await api.delete(`/estoque/${id}`);
+            console.log("Exclusão:", response.data);
+            return response.data;
+        },
+        onSuccess: (_, id) => {
+            // Invalida a lista geral e o item específico que foi removido
+            queryClient.invalidateQueries({ queryKey: ["produtos"] });
+            queryClient.invalidateQueries({ queryKey: ["produto", id] });
+        
+            Alert.alert("Sucesso", "Produto excluído com sucesso!");
+            router.back();
+        }, 
+        onError: (error: any) => {
+            const message = error.response?.data?.message || "Erro ao excluir produto";
+            Alert.alert("Erro", message);
+        }
+    });
 }

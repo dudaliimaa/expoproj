@@ -1,98 +1,51 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from 'react';
+import { FlatList, View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { useEstoque } from '@/features/produtos/hooks/useEstoque';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function EstoqueScreen() {
+  const { data: produtos, isLoading } = useEstoque();
+  console.log("O que o hook trouxe do banco:", produtos);
+  if (isLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#27ae60" />
+      </View>
+    );
+  }
 
-export default function HomeScreen() {
+  // Lógica de correção: Garante que 'listaParaExibir' seja sempre um Array
+  // Se 'produtos' for um objeto único, transformamos em array. Se for array, usamos ele.
+  const listaParaExibir = Array.isArray(produtos) 
+    ? produtos 
+    : (produtos ? [produtos] : []);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.header}>Produtos em Estoque</Text>
+      
+      <FlatList
+        data={listaParaExibir}
+        keyExtractor={(item: any) => item?.id ? item.id.toString() : Math.random().toString()}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.nome}>{item?.nome || 'Sem nome'}</Text>
+            <Text style={styles.info}>
+              Preço: R$ {item?.preco || '0.00'} | Qtd: {item?.qtd || '0'}
+            </Text>
+          </View>
+        )}
+        ListEmptyComponent={<Text style={styles.vazio}>Nenhum produto cadastrado.</Text>}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  container: { flex: 1, backgroundColor: '#121212', padding: 20 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' },
+  header: { fontSize: 24, color: '#27ae60', fontWeight: 'bold', marginBottom: 20 },
+  card: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 10 },
+  nome: { fontSize: 18, fontWeight: 'bold' },
+  info: { color: '#555', fontSize: 14, marginTop: 5 },
+  vazio: { color: '#fff', textAlign: 'center', marginTop: 50 }
 });

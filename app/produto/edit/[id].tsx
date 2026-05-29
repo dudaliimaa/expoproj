@@ -1,7 +1,8 @@
 import ProdutoEditScreen from "@/features/produtos/ProdutoEditScreen";
-import { useLocalSearchParams } from "expo-router";
+import { useTheme } from '@react-navigation/native';
 
 export default function Edit() {
-  const { id }: { id: string } = useLocalSearchParams();
-  return <ProdutoEditScreen id={id} />;
+    return (
+        <ProdutoEditScreen />
+    );
 }
